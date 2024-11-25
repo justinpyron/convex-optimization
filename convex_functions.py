@@ -2,16 +2,16 @@ import numpy as np
 
 
 class Phi:
-    def __init__(self, functions):
+    def __init__(self, functions: list[callable]) -> None:
         self.functions = functions
 
-    def __call__(self, x):
+    def __call__(self, x: np.array) -> float:
         return -sum([np.log(-f(x)) for f in self.functions])
 
-    def gradient(self, x):
+    def gradient(self, x: np.array) -> np.array:
         return -sum([f.gradient(x) / f(x) for f in self.functions])
 
-    def hessian(self, x):
+    def hessian(self, x: np.array) -> np.array:
         a = sum(
             [
                 np.outer(f.gradient(x), f.gradient(x)) / np.square(f(x))
@@ -31,16 +31,21 @@ class Omega:
     where t > 0 is fixed.
     """
 
-    def __init__(self, t, objective, phi):
+    def __init__(
+        self,
+        t: float,
+        objective: callable,
+        phi: Phi,
+    ) -> None:
         self.t = t
         self.objective = objective
         self.phi = phi
 
-    def __call__(self, x):
+    def __call__(self, x: np.array) -> float:
         return self.objective(x) + self.phi(x) / self.t
 
-    def gradient(self, x):
+    def gradient(self, x: np.array) -> np.array:
         return self.objective.gradient(x) + self.phi.gradient(x) / self.t
 
-    def hessian(self, x):
+    def hessian(self, x: np.array) -> np.array:
         return self.objective.hessian(x) + self.phi.hessian(x) / self.t

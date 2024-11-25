@@ -11,7 +11,14 @@ class QuadraticEqualityConstrained:
     subject to    Ax = b
     """
 
-    def __init__(self, P, q, r, A, b):
+    def __init__(
+        self,
+        P: np.array,
+        q: np.array,
+        r: float,
+        A: np.array,
+        b: np.array,
+    ) -> None:
         self.P = P
         self.q = q
         self.r = r
@@ -20,7 +27,7 @@ class QuadraticEqualityConstrained:
         self.n = P.shape[0]
         self.m = A.shape[0]
 
-    def solve(self):
+    def solve(self) -> tuple[np.float64, np.array]:
         """
         Solve the optimization problem
 
@@ -41,7 +48,7 @@ class QuadraticEqualityConstrained:
         LHS = np.concatenate([-self.q, self.b])
 
         solution = np.linalg.lstsq(RHS, LHS, rcond=None)[0]
-        x = solution[: self.n]  # extract primal variable
+        x = solution[: self.n]  # Extract primal variable
         solution = 0.5 * x.dot(self.P.dot(x)) + self.q.dot(x) + self.r
 
         return solution, x
@@ -57,15 +64,24 @@ class EqualityConstrained:
     where f is convex.
     """
 
-    def __init__(self, objective_function, A, b):
+    def __init__(
+        self,
+        objective_function: callable,
+        A: np.array,
+        b: np.array,
+    ) -> None:
         self.f = objective_function
         self.A = A
         self.b = b
 
-    # TODO implement Phase I method to compute a feasible starting
-    # point, or determine that one does not exist
+        # TODO Implement Phase I method to compute a feasible
+        #  starting point, or determine that one does not exist
 
-    def solve(self, starting_point, tol=1e-5):
+    def solve(
+        self,
+        starting_point: np.array,
+        tol: float = 1e-5,
+    ) -> tuple[np.float64, np.array]:
         """
         Solve the optimization problem
 
@@ -83,7 +99,7 @@ class EqualityConstrained:
             The point at which the objective function is optimal
         """
         x = starting_point
-        change = -tol - 1  # ensure while loop starts
+        change = -tol - 1  # Ensure while loop starts
         i = 0
         while change < -tol:
             new_x = x + self.compute_step(x)
@@ -93,32 +109,16 @@ class EqualityConstrained:
 
         return solution, x
 
-    def compute_step(self, x):
-        problem = QuadraticEqualityConstrained(
+    def compute_step(self, x: np.array) -> np.array:
+        qec_problem = QuadraticEqualityConstrained(
             P=self.f.hessian(x),
             q=self.f.gradient(x),
             r=0,
             A=self.A,
             b=self.b - self.A.dot(x),
         )
-        _, step = problem.solve()
+        _, step = qec_problem.solve()
         return step
-
-
-class InequalityConstrained:
-    """
-    Solves inequality-constrained optimization problems of the form
-
-    minimize      f_0(x)
-    subject to    f_i(x) <= 0, i=1,...,n
-
-    where f_i, i=0,...,n are convex.
-    """
-
-    def __init__(self):
-        pass
-
-    # TODO implement this class
 
 
 class EqualityAndInequalityConstrained:
@@ -132,7 +132,13 @@ class EqualityAndInequalityConstrained:
     where f_i, i=0,...,n are convex.
     """
 
-    def __init__(self, objective, constraint_functions, A, b):
+    def __init__(
+        self,
+        objective: callable,
+        constraint_functions: list[callable],
+        A: np.array,
+        b: np.array,
+    ) -> None:
         """
         Arguments
         ---------
@@ -150,7 +156,11 @@ class EqualityAndInequalityConstrained:
         self.A = A
         self.b = b
 
-    def solve(self, starting_point, tol=1e-4):
+    def solve(
+        self,
+        starting_point: np.array,
+        tol: float = 1e-4,
+    ) -> tuple[np.float64, np.array]:
         """
         Solve the optimization problem
 
@@ -180,7 +190,7 @@ class EqualityAndInequalityConstrained:
             x = new_x
             t *= 1.5
             i += 1
-            if change > -tol and i >= 4:  # arbitrary min iteration threshold
+            if change > -tol and i >= 4:  # Arbitrary minimum iteration threshold
                 break
         solution = self.objective(x)
 
