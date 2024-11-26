@@ -176,10 +176,8 @@ with tab1:
             "Select the number of variables and equality constraints, "
             "then $P$, $q$, $r$, $A$, $b$ will be randomly generated."
         )
-        n = st.slider("Number of variables", min_value=1, max_value=50, value=25)
-        m = st.slider(
-            "Number of equality constraints", min_value=51, max_value=100, value=75
-        )
+        n = st.slider("Number of variables", 1, 50, 25)
+        m = st.slider("Number of equality constraints", 51, 100, 75)
         submitted = st.form_submit_button(
             "Solve", type="primary", use_container_width=True
         )
@@ -210,10 +208,8 @@ with tab2:
             "Select the number of variables and equality constraints, "
             "then $A$ and $b$ will be randomly generated."
         )
-        n = st.slider("Number of variables", min_value=1, max_value=50, value=25)
-        m = st.slider(
-            "Number of equality constraints", min_value=51, max_value=100, value=75
-        )
+        n = st.slider("Number of variables", 1, 50, 25)
+        m = st.slider("Number of equality constraints", 51, 100, 75)
         submitted = st.form_submit_button(
             "Solve", type="primary", use_container_width=True
         )
@@ -249,10 +245,8 @@ with tab3:
             "Select the number of variables and equality constraints, "
             "then $c$, $A$, $b$ will be randomly generated."
         )
-        n = st.slider("Number of variables", min_value=1, max_value=50, value=25)
-        m = st.slider(
-            "Number of equality constraints", min_value=51, max_value=100, value=75
-        )
+        n = st.slider("Number of variables", 1, 50, 25)
+        m = st.slider("Number of equality constraints", 51, 100, 75)
         submitted = st.form_submit_button(
             "Solve", type="primary", use_container_width=True
         )
