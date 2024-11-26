@@ -143,10 +143,25 @@ def report_results(
     )
 
 
+what_is_it = """
+This app demos a [Convex Optimization](https://en.wikipedia.org/wiki/Convex_optimization) solver that I built from scratch. It uses the logarithmic barrier technique.
+
+There are three tabs which demo three types of problems:
+1. Quadratic Equality Constrained
+2. Equality Constrained
+3. Equality and Inequality Constrained
+
+To validate my algorithm, I compare results obtained with the open-source [CVXPY library](https://www.cvxpy.org/).
+
+To view the source code, see 👉 [GitHub](https://github.com/justinpyron/convex-optimization/blob/main/convex_problem.py).
+
+For an explanation of the underlying math and algorithms, see 👉 [underlying math](https://github.com/justinpyron/convex-optimization/blob/main/underlying_math.pdf).
+"""
+
 st.set_page_config(page_title="Convex Opt", layout="centered", page_icon="🥇")
 st.title("Convex Optimization 🥇")
-with st.expander("How it works"):
-    st.markdown("TODO")
+with st.expander("What is it?"):
+    st.markdown(what_is_it)
 
 tab1, tab2, tab3 = st.tabs(
     [
