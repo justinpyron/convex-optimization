@@ -46,14 +46,82 @@ class EqualityAndInequalityConstrainedConstraint:
         return 2 * np.eye(x.shape[0])
 
 
-def generate_params_quadratic_equality(num_variables, num_constraints):
+def solve_quadratic_equality_constrained(
+    num_variables: int,
+    num_constraints: int,
+) -> tuple[float, float]:
+    # Problem data
     U = np.random.randn(num_variables, num_variables)
     P = U.T.dot(U)  # Creating P this way ensures it is positive semi-definite
     q = np.random.randn(num_variables)
     r = 0  # Does not affect optimal decision variable, so we can ignore
     A = np.random.randn(num_constraints, num_variables)
     b = A.dot(np.random.randn(num_variables))
-    return P, q, r, A, b
+
+    # Custom
+    solution_custom, x = convex_problem.QuadraticEqualityConstrained(
+        P, q, r, A, b
+    ).solve()
+
+    # CVXPY
+    x = cvxpy.Variable(n)
+    solution_cvxpy = cvxpy.Problem(
+        objective=cvxpy.Minimize(0.5 * cvxpy.quad_form(x, P) + q.T @ x),
+        constraints=[A @ x == b],
+    ).solve()
+
+    return solution_custom, solution_cvxpy
+
+
+def solve_equality_constrained(
+    num_variables: int,
+    num_constraints: int,
+) -> tuple[float, float]:
+    # Problem data
+    A = np.random.randn(num_constraints, num_variables)
+    b = A.dot(np.random.randn(num_variables))
+
+    # Custom
+    function = EqualityConstrainedObjective()
+    problem = convex_problem.EqualityConstrained(function, A, b)
+    starting_point = np.linalg.lstsq(A, b, rcond=None)[0]
+    solution_custom, x = problem.solve(starting_point)
+
+    # CVXPY
+    x = cvxpy.Variable(n)
+    solution_cvxpy = cvxpy.Problem(
+        objective=cvxpy.Minimize(cvxpy.norm(x) ** 2 + cvxpy.sum(cvxpy.exp(x))),
+        constraints=[A @ x == b],
+    ).solve()
+
+    return solution_custom, solution_cvxpy
+
+
+def solve_equality_and_inequality_constrained(
+    num_variables: int,
+    num_constraints: int,
+) -> tuple[float, float]:
+    # Problem data
+    c = np.random.randint(-50, 50, num_variables)
+    A = np.random.randn(num_constraints, num_variables)
+    x_0 = np.random.uniform(size=num_variables) / np.sqrt(num_variables)
+    b = A.dot(x_0)
+
+    # Custom
+    objective = EqualityAndInequalityConstrainedObjective(c)
+    constraint_functions = [EqualityAndInequalityConstrainedConstraint()]
+    solution_custom, x = convex_problem.EqualityAndInequalityConstrained(
+        objective, constraint_functions, A, b
+    ).solve(x_0)
+
+    # CVXPY
+    x = cvxpy.Variable(n)
+    solution_cvxpy = cvxpy.Problem(
+        objective=cvxpy.Minimize(c.T @ x),
+        constraints=[cvxpy.norm(x) ** 2 <= 1, A @ x == b],
+    ).solve()
+
+    return solution_custom, solution_cvxpy
 
 
 def report_results(
@@ -116,22 +184,7 @@ with tab1:
             "Solve", type="primary", use_container_width=True
         )
         if submitted:
-            # Problem data
-            P, q, r, A, b = generate_params_quadratic_equality(n, m)
-
-            # CVXPY
-            x = cvxpy.Variable(n)
-            solution_cvxpy = cvxpy.Problem(
-                objective=cvxpy.Minimize(0.5 * cvxpy.quad_form(x, P) + q.T @ x),
-                constraints=[A @ x == b],
-            ).solve()
-
-            # convex-optimization
-            solution_custom, x = convex_problem.QuadraticEqualityConstrained(
-                P, q, r, A, b
-            ).solve()
-
-            # Print solution
+            solution_custom, solution_cvxpy = solve_quadratic_equality_constrained(n, m)
             report_results(solution_custom, solution_cvxpy)
 
 with tab2:
@@ -165,24 +218,7 @@ with tab2:
             "Solve", type="primary", use_container_width=True
         )
         if submitted:
-            # Problem data
-            A = np.random.randn(m, n)
-            b = A.dot(np.random.randn(n))
-
-            # CVXPY
-            x = cvxpy.Variable(n)
-            solution_cvxpy = cvxpy.Problem(
-                objective=cvxpy.Minimize(cvxpy.norm(x) ** 2 + cvxpy.sum(cvxpy.exp(x))),
-                constraints=[A @ x == b],
-            ).solve()
-
-            # convex-optimization
-            function = EqualityConstrainedObjective()
-            problem = convex_problem.EqualityConstrained(function, A, b)
-            starting_point = np.linalg.lstsq(A, b, rcond=None)[0]
-            solution_custom, x = problem.solve(starting_point)
-
-            # Print solution
+            solution_custom, solution_cvxpy = solve_equality_constrained(n, m)
             report_results(solution_custom, solution_cvxpy)
 
 with tab3:
@@ -221,25 +257,7 @@ with tab3:
             "Solve", type="primary", use_container_width=True
         )
         if submitted:
-            # Problem data
-            c = np.random.randint(-50, 50, n)
-            A = np.random.randn(m, n)
-            x_0 = np.random.uniform(size=n) / np.sqrt(n)
-            b = A.dot(x_0)
-
-            # CVXPY
-            x = cvxpy.Variable(n)
-            solution_cvxpy = cvxpy.Problem(
-                objective=cvxpy.Minimize(c.T @ x),
-                constraints=[cvxpy.norm(x) ** 2 <= 1, A @ x == b],
-            ).solve()
-
-            # convex-optimization
-            objective = EqualityAndInequalityConstrainedObjective(c)
-            constraint_functions = [EqualityAndInequalityConstrainedConstraint()]
-            solution_custom, x = convex_problem.EqualityAndInequalityConstrained(
-                objective, constraint_functions, A, b
-            ).solve(x_0)
-
-            # Print solution
+            solution_custom, solution_cvxpy = solve_equality_and_inequality_constrained(
+                n, m
+            )
             report_results(solution_custom, solution_cvxpy)
