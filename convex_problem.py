@@ -138,7 +138,7 @@ class EqualityAndInequalityConstrained:
         b : The b vector from linear equality constraints
         """
         self.objective_function = objective_function
-        self.phi = convex_functions.Phi(constraint_functions)
+        self.log_barrier = convex_functions.LogBarrier(constraint_functions)
         self.A = A
         self.b = b
 
@@ -167,8 +167,10 @@ class EqualityAndInequalityConstrained:
         t = 1e-6
         num_iterations = 0
         while t < max_t:
-            omega = convex_functions.Omega(t, self.objective_function, self.phi)
-            ec_problem = EqualityConstrained(omega, self.A, self.b)
+            approx_objective = convex_functions.ApproximatedObjective(
+                t, self.objective_function, self.log_barrier
+            )
+            ec_problem = EqualityConstrained(approx_objective, self.A, self.b)
             _, new_x = ec_problem.solve(x)
             change = self.objective_function(new_x) - self.objective_function(x)
             x = new_x
