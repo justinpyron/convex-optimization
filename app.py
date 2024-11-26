@@ -144,7 +144,7 @@ def report_results(
 
 
 what_is_it = """
-This app demos a [Convex Optimization](https://en.wikipedia.org/wiki/Convex_optimization) solver that I built from scratch. It uses the logarithmic barrier technique.
+This app demos a [Convex Optimization](https://en.wikipedia.org/wiki/Convex_optimization) solver that I built from scratch. It uses an interior-point method.
 
 There are three tabs which demo three types of problems:
 1. Quadratic Equality Constrained
