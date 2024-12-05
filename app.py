@@ -146,14 +146,14 @@ def report_results(
 what_is_this_app = """
 This app demos a [Convex Optimization](https://en.wikipedia.org/wiki/Convex_optimization) solver that I built from scratch.
 
-There are three tabs which demo three types of convex problems:
+Three tabs demo three types of convex problems:
 1. Quadratic Equality Constrained
 2. Equality Constrained
 3. Equality and Inequality Constrained
 
 To validate my solver, I compare my results to those from the open-source [CVXPY solver](https://www.cvxpy.org/).
 
-To explain the underlying math and algorithms, I wrote a [comprehensive overview of Convex Optimization](https://github.com/justinpyron/convex-optimization/blob/main/underlying_math.pdf).
+I explain the underlying math and algorithms in [comprehensive overview of Convex Optimization](https://github.com/justinpyron/convex-optimization/blob/main/underlying_math.pdf).
 
 Source code 👉 [GitHub](https://github.com/justinpyron/convex-optimization/blob/main/convex_problem.py)
 """
