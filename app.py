@@ -143,25 +143,25 @@ def report_results(
     )
 
 
-what_is_it = """
-This app demos a [Convex Optimization](https://en.wikipedia.org/wiki/Convex_optimization) solver that I built from scratch. It uses an interior-point method.
+what_is_this_app = """
+This app demos a [Convex Optimization](https://en.wikipedia.org/wiki/Convex_optimization) solver that I built from scratch.
 
-There are three tabs which demo three types of problems:
+There are three tabs which demo three types of convex problems:
 1. Quadratic Equality Constrained
 2. Equality Constrained
 3. Equality and Inequality Constrained
 
-To validate my algorithm, I compare results obtained with the open-source [CVXPY library](https://www.cvxpy.org/).
+To validate my solver, I compare my results to those from the open-source [CVXPY solver](https://www.cvxpy.org/).
 
-To view the source code, see 👉 [GitHub](https://github.com/justinpyron/convex-optimization/blob/main/convex_problem.py).
+To explain the underlying math and algorithms, I wrote a [comprehensive overview of Convex Optimization](https://github.com/justinpyron/convex-optimization/blob/main/underlying_math.pdf).
 
-For an explanation of the underlying math and algorithms, see 👉 [underlying math](https://github.com/justinpyron/convex-optimization/blob/main/underlying_math.pdf).
+Source code 👉 [GitHub](https://github.com/justinpyron/convex-optimization/blob/main/convex_problem.py)
 """
 
 st.set_page_config(page_title="Convex Opt", layout="centered", page_icon="🥇")
 st.title("Convex Optimization 🥇")
-with st.expander("What is it?"):
-    st.markdown(what_is_it)
+with st.expander("What is this app?"):
+    st.markdown(what_is_this_app)
 
 tab1, tab2, tab3 = st.tabs(
     [
@@ -188,8 +188,8 @@ with tab1:
         )
         st.subheader("Problem parameters")
         st.markdown(
-            "Select the number of variables and equality constraints, "
-            "then $P$, $q$, $r$, $A$, $b$ will be randomly generated."
+            "Select the number of variables and equality constraints. "
+            "Then $P$, $q$, $r$, $A$, $b$ are randomly generated."
         )
         n = st.slider("Number of variables", 1, 50, 25)
         m = st.slider("Number of equality constraints", 51, 100, 75)
@@ -220,8 +220,8 @@ with tab2:
         )
         st.subheader("Problem parameters")
         st.markdown(
-            "Select the number of variables and equality constraints, "
-            "then $A$ and $b$ will be randomly generated."
+            "Select the number of variables and equality constraints. "
+            "Then $A$ and $b$ are randomly generated."
         )
         n = st.slider("Number of variables", 1, 50, 25)
         m = st.slider("Number of equality constraints", 51, 100, 75)
@@ -257,8 +257,8 @@ with tab3:
         )
         st.subheader("Problem parameters")
         st.markdown(
-            "Select the number of variables and equality constraints, "
-            "then $c$, $A$, $b$ will be randomly generated."
+            "Select the number of variables and equality constraints. "
+            "Then $c$, $A$, $b$ are randomly generated."
         )
         n = st.slider("Number of variables", 1, 50, 25)
         m = st.slider("Number of equality constraints", 51, 100, 75)
