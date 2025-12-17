@@ -36,9 +36,7 @@ poetry install
 # Usage
 A Streamlit web app is the frontend for interacting with the solver.
 
-The app can be accessed at https://convex-optimization-from-scratch.streamlit.app.
-
-Alternatively, the app can be run locally with
+The app can be run locally with
 ```
 poetry run streamlit run app.py
 ```
