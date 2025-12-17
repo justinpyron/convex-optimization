@@ -128,28 +128,8 @@ def solve_equality_and_inequality_constrained(
     return solution_custom, x_custom, solution_cvxpy, x_cvxpy.value
 
 
-def report_results(
-    solution_custom: float,
-    x_custom: np.ndarray,
-    solution_cvxpy: float,
-    x_cvxpy: np.ndarray,
-) -> None:
-    col1, col2 = st.columns(2)
-    with col1:
-        st.header("My solver")
-        st.write("Optimal value = {:.7f}".format(solution_custom))
-    with col2:
-        st.header("CVXPY solver")
-        st.write("Optimal value = {:.7f}".format(solution_cvxpy))
-    st.info(
-        "Relative error = {:.1E}".format(
-            np.abs(solution_cvxpy - solution_custom) / solution_cvxpy
-        ),
-        icon="ℹ️",
-    )
-
-    # Side-by-side solution comparison chart
-    st.subheader("Solution Comparison")
+def plot_solution_comparison(x_custom: np.ndarray, x_cvxpy: np.ndarray) -> None:
+    """Display a grouped bar chart comparing two solution vectors."""
     n = len(x_custom)
     df = pd.DataFrame(
         {
@@ -177,6 +157,30 @@ def report_results(
         .properties(height=350)
     )
     st.altair_chart(chart, use_container_width=True)
+
+
+def report_results(
+    solution_custom: float,
+    x_custom: np.ndarray,
+    solution_cvxpy: float,
+    x_cvxpy: np.ndarray,
+) -> None:
+    col1, col2 = st.columns(2)
+    with col1:
+        st.header("My solver")
+        st.write("Optimal value = {:.7f}".format(solution_custom))
+    with col2:
+        st.header("CVXPY solver")
+        st.write("Optimal value = {:.7f}".format(solution_cvxpy))
+    st.info(
+        "Relative error = {:.1E}".format(
+            np.abs(solution_cvxpy - solution_custom) / solution_cvxpy
+        ),
+        icon="ℹ️",
+    )
+
+    st.subheader("Solution Comparison")
+    plot_solution_comparison(x_custom, x_cvxpy)
 
 
 what_is_this_app = """
