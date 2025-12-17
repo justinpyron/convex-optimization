@@ -152,7 +152,7 @@ def plot_solution_comparison(x_custom: np.ndarray, x_cvxpy: np.ndarray) -> None:
                 ),
                 legend=alt.Legend(title="Solver", orient="top"),
             ),
-            xOffset="Solver:N",
+            xOffset=alt.XOffset("Solver:N", sort=["My solver", "CVXPY"]),
         )
         .properties(height=350)
     )
