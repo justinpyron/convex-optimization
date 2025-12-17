@@ -1,5 +1,7 @@
+import altair as alt
 import cvxpy
 import numpy as np
+import pandas as pd
 import streamlit as st
 
 import convex_problem
@@ -49,7 +51,7 @@ class EqualityAndInequalityConstrainedConstraint:
 def solve_quadratic_equality_constrained(
     num_variables: int,
     num_constraints: int,
-) -> tuple[float, float]:
+) -> tuple[float, np.ndarray, float, np.ndarray]:
     # Problem data
     U = np.random.randn(num_variables, num_variables)
     P = U.T.dot(U)  # Creating P this way ensures it is positive semi-definite
@@ -59,24 +61,24 @@ def solve_quadratic_equality_constrained(
     b = A.dot(np.random.randn(num_variables))
 
     # Custom
-    solution_custom, x = convex_problem.QuadraticEqualityConstrained(
+    solution_custom, x_custom = convex_problem.QuadraticEqualityConstrained(
         P, q, r, A, b
     ).solve()
 
     # CVXPY
-    x = cvxpy.Variable(n)
+    x_cvxpy = cvxpy.Variable(num_variables)
     solution_cvxpy = cvxpy.Problem(
-        objective=cvxpy.Minimize(0.5 * cvxpy.quad_form(x, P) + q.T @ x),
-        constraints=[A @ x == b],
+        objective=cvxpy.Minimize(0.5 * cvxpy.quad_form(x_cvxpy, P) + q.T @ x_cvxpy),
+        constraints=[A @ x_cvxpy == b],
     ).solve()
 
-    return solution_custom, solution_cvxpy
+    return solution_custom, x_custom, solution_cvxpy, x_cvxpy.value
 
 
 def solve_equality_constrained(
     num_variables: int,
     num_constraints: int,
-) -> tuple[float, float]:
+) -> tuple[float, np.ndarray, float, np.ndarray]:
     # Problem data
     A = np.random.randn(num_constraints, num_variables)
     b = A.dot(np.random.randn(num_variables))
@@ -85,22 +87,24 @@ def solve_equality_constrained(
     function = EqualityConstrainedObjective()
     problem = convex_problem.EqualityConstrained(function, A, b)
     starting_point = np.linalg.lstsq(A, b, rcond=None)[0]
-    solution_custom, x = problem.solve(starting_point)
+    solution_custom, x_custom = problem.solve(starting_point)
 
     # CVXPY
-    x = cvxpy.Variable(n)
+    x_cvxpy = cvxpy.Variable(num_variables)
     solution_cvxpy = cvxpy.Problem(
-        objective=cvxpy.Minimize(cvxpy.norm(x) ** 2 + cvxpy.sum(cvxpy.exp(x))),
-        constraints=[A @ x == b],
+        objective=cvxpy.Minimize(
+            cvxpy.norm(x_cvxpy) ** 2 + cvxpy.sum(cvxpy.exp(x_cvxpy))
+        ),
+        constraints=[A @ x_cvxpy == b],
     ).solve()
 
-    return solution_custom, solution_cvxpy
+    return solution_custom, x_custom, solution_cvxpy, x_cvxpy.value
 
 
 def solve_equality_and_inequality_constrained(
     num_variables: int,
     num_constraints: int,
-) -> tuple[float, float]:
+) -> tuple[float, np.ndarray, float, np.ndarray]:
     # Problem data
     c = np.random.randint(-50, 50, num_variables)
     A = np.random.randn(num_constraints, num_variables)
@@ -110,23 +114,25 @@ def solve_equality_and_inequality_constrained(
     # Custom
     objective = EqualityAndInequalityConstrainedObjective(c)
     constraint_functions = [EqualityAndInequalityConstrainedConstraint()]
-    solution_custom, x = convex_problem.EqualityAndInequalityConstrained(
+    solution_custom, x_custom = convex_problem.EqualityAndInequalityConstrained(
         objective, constraint_functions, A, b
     ).solve(x_0)
 
     # CVXPY
-    x = cvxpy.Variable(n)
+    x_cvxpy = cvxpy.Variable(num_variables)
     solution_cvxpy = cvxpy.Problem(
-        objective=cvxpy.Minimize(c.T @ x),
-        constraints=[cvxpy.norm(x) ** 2 <= 1, A @ x == b],
+        objective=cvxpy.Minimize(c.T @ x_cvxpy),
+        constraints=[cvxpy.norm(x_cvxpy) ** 2 <= 1, A @ x_cvxpy == b],
     ).solve()
 
-    return solution_custom, solution_cvxpy
+    return solution_custom, x_custom, solution_cvxpy, x_cvxpy.value
 
 
 def report_results(
     solution_custom: float,
+    x_custom: np.ndarray,
     solution_cvxpy: float,
+    x_cvxpy: np.ndarray,
 ) -> None:
     col1, col2 = st.columns(2)
     with col1:
@@ -141,6 +147,36 @@ def report_results(
         ),
         icon="ℹ️",
     )
+
+    # Side-by-side solution comparison chart
+    st.subheader("Solution Comparison")
+    n = len(x_custom)
+    df = pd.DataFrame(
+        {
+            "Variable": [f"x{i+1}" for i in range(n)] * 2,
+            "Value": np.concatenate([x_custom, x_cvxpy]),
+            "Solver": ["My solver"] * n + ["CVXPY"] * n,
+        }
+    )
+    chart = (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(
+            x=alt.X("Variable:N", title="Decision Variable", sort=None),
+            y=alt.Y("Value:Q", title="Value"),
+            color=alt.Color(
+                "Solver:N",
+                scale=alt.Scale(
+                    domain=["My solver", "CVXPY"],
+                    range=["#FF6B6B", "#4ECDC4"],
+                ),
+                legend=alt.Legend(title="Solver", orient="top"),
+            ),
+            xOffset="Solver:N",
+        )
+        .properties(height=350)
+    )
+    st.altair_chart(chart, use_container_width=True)
 
 
 what_is_this_app = """
@@ -197,8 +233,13 @@ with tab1:
             "Solve", type="primary", use_container_width=True
         )
         if submitted:
-            solution_custom, solution_cvxpy = solve_quadratic_equality_constrained(n, m)
-            report_results(solution_custom, solution_cvxpy)
+            (
+                solution_custom,
+                x_custom,
+                solution_cvxpy,
+                x_cvxpy,
+            ) = solve_quadratic_equality_constrained(n, m)
+            report_results(solution_custom, x_custom, solution_cvxpy, x_cvxpy)
 
 with tab2:
     with st.form(key="tab2"):
@@ -229,8 +270,13 @@ with tab2:
             "Solve", type="primary", use_container_width=True
         )
         if submitted:
-            solution_custom, solution_cvxpy = solve_equality_constrained(n, m)
-            report_results(solution_custom, solution_cvxpy)
+            (
+                solution_custom,
+                x_custom,
+                solution_cvxpy,
+                x_cvxpy,
+            ) = solve_equality_constrained(n, m)
+            report_results(solution_custom, x_custom, solution_cvxpy, x_cvxpy)
 
 with tab3:
     with st.form(key="tab3"):
@@ -266,7 +312,10 @@ with tab3:
             "Solve", type="primary", use_container_width=True
         )
         if submitted:
-            solution_custom, solution_cvxpy = solve_equality_and_inequality_constrained(
-                n, m
-            )
-            report_results(solution_custom, solution_cvxpy)
+            (
+                solution_custom,
+                x_custom,
+                solution_cvxpy,
+                x_cvxpy,
+            ) = solve_equality_and_inequality_constrained(n, m)
+            report_results(solution_custom, x_custom, solution_cvxpy, x_cvxpy)
